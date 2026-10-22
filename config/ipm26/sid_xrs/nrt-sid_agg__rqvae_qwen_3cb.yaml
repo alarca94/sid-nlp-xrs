@@ -1,0 +1,22 @@
+data:
+  word_tok: default
+  batch_size: 200
+  train_workers: 2
+  semantic_id:
+    item:
+      config_name: rqvae_qwen_3cb
+      mode: replace
+      dedup_items_on_load: false
+model:
+  name: NRT
+  suffix: -SID__rqvae_qwen_3cb
+  emsize: 300
+  hidden_size: 400
+  nlayers_rr: 4
+  mtl_aggregator:
+    name: sum
+train:
+  clip_norm: 1.0
+  optim:
+    name: adam
+    lr: 0.0001

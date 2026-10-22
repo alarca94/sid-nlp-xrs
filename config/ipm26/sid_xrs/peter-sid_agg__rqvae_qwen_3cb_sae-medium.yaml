@@ -1,0 +1,39 @@
+data:
+  load_cols: [review]
+  train_workers: 4
+  eval_workers: 4
+  hist_len: 0
+  word_tok: default
+  coldstart_fill: false
+  batch_size: 128
+  semantic_id:
+    item:
+      config_name: rqvae_qwen_3cb_sae-medium
+      mode: replace
+      dedup_items_on_load: false
+model:
+  name: PETER
+  suffix: -SID_AGG__rqvae_qwen_3cb_sae-medium
+  emsize: 512
+  nhid: 2048
+  nhead: 2
+  nlayers: 2
+  dropout: 0.2
+  use_feature: false
+  mask_type: peter
+  tied_weights: false
+  init_codebooks: false
+  sid_agg: mean
+  mtl_aggregator:
+    name: sum
+    weights:
+      explanation: 1.0
+      context: 1.0
+      rating: 0.1
+train:
+  clip_norm: 1.0
+  scheduler:
+    name: steplr
+  optim:
+    name: adamw
+    lr: 0.001

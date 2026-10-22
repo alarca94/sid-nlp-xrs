@@ -1,0 +1,74 @@
+# RQ-VAE User SID Tokenizer Configuration
+#
+# Trains a Semantic ID tokenizer whose embedding space represents *users* rather
+# than items.  Each user is described by two LLM-generated profile texts that
+# are concatenated and encoded with a SentenceTransformer model:
+#
+#   taste     – product-preference profile inferred from the user's interaction
+#               history (categories, price range, brand loyalty, taste coherence)
+#   technical – reviewing-style profile inferred from the user's raw review texts
+#               (focused aspects, sentiment tendency, writing specificity)
+#
+# Usage:
+#   python train_tokenizer.py --dataset beauty --config rqvae_user_profiles --mode user
+
+# ---------------------------------------------------------------------------
+# Tokenizer architecture (same as item tokenizers)
+# ---------------------------------------------------------------------------
+# Tokenizer settings
+tokenizer_type: 'rqvae'
+use_pretrained: false
+model_path: null  # Set this if use_pretrained=true
+distance_metric: 'l2'
+normalize_input: null #'whiten_l2'
+normalize_residual: false
+use_ema: true
+ema_decay: 0.99
+ema_eps: 1.0e-5
+low_usage_threshold: 100
+pca_dim: 120
+pca_whiten: true
+init_kwargs:
+  # init_method: 'uniform'
+  init_method: 'minibatch_kmeans'
+  init_batch_size: 3072
+  max_iter: 1000
+  
+# RQ-VAE Architecture
+encoder_dims: [768, 256, 128, 64]
+decoder_dims: [64, 128, 256, 768]
+
+# Quantization settings
+n_codebooks: 3  # Number of codebooks (token sequence length)
+codebook_size: 256  # Vocabulary size per position (total vocab = codebook_size^n_codebooks)
+commitment_cost: 0.25
+
+# SAE architecture
+sae_preset: large
+kl_weight: 0.1
+
+# Training settings
+num_epochs: 3000
+batch_size: 2048
+learning_rate: 0.001
+# scheduler:
+#   name: 'warmup_linear'
+#   warmup_steps: 1000
+#   total_steps: null
+#   min_ratio: 0.01
+
+# Embedding source sub-config
+emb_config:
+  source: 'text'
+  embedding_model: Qwen/Qwen3-Embedding-0.6B
+  max_seq_length: 8192
+  batch_size: 4
+  entity: 'item'
+
+  components:
+    - metadata
+    - description
+
+  text_combine_method: concat_text
+
+report_interval: 50

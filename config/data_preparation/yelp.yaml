@@ -1,0 +1,12 @@
+name: "Yelp"
+
+# Parameters for extract_exps.py
+stanza_tools: "tokenize,mwt,pos,lemma,depparse"
+exp_rule: "nlp_exp_rule"
+
+# Parameters for process_data.py
+min_revs: 4
+kcore: 5
+dedup_uir: False
+min_exp_toks: null
+max_u_samples: null

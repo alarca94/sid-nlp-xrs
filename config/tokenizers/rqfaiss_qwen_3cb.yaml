@@ -1,0 +1,34 @@
+# Faiss residual quantizer (RQ-KMeans in the paper). M=3, V=256, Qwen3-Embedding-0.6B.
+
+# ── Tokenizer type ──────────────────────────────────────────────────────────
+tokenizer_type: 'faiss_rq'
+use_pretrained: false
+model_path: null  # Set this if use_pretrained=true
+
+# ── Quantization settings ───────────────────────────────────────────────────
+n_codebooks: 3          # Number of residual layers (= token sequence length)
+codebook_size: 256      # Clusters per layer (vocab size per token position)
+input_dim: 1024         # Must match the embedding dimensionality
+
+# ── R-KMeans specific ───────────────────────────────────────────────────────
+normalize_input: true       # L2-normalise raw embeddings before quantization
+normalize_residual: true    # L2-normalise residuals between layers
+train_layer_wise: true      # Train one layer at a time (GRID default)
+init_buffer_size: 3072      # Samples buffered for K-Means++ initialisation
+pca_dim: 120
+pca_whiten: true
+faiss_omp_num_threads: 16
+
+# ── Inference / evaluation ──────────────────────────────────────────────────
+chunk_size: 10000       # Process embeddings in chunks to limit GPU memory
+
+# Embedding source sub-config
+emb_config:
+  source: 'text'
+  embedding_model: Qwen/Qwen3-Embedding-0.6B
+
+  components:
+    - metadata
+    - description
+
+  text_combine_method: concat_text

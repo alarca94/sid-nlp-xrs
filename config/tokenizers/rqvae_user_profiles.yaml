@@ -1,0 +1,95 @@
+# RQ-VAE User SID Tokenizer Configuration
+#
+# Trains a Semantic ID tokenizer whose embedding space represents *users* rather
+# than items.  Each user is described by two LLM-generated profile texts that
+# are concatenated and encoded with a SentenceTransformer model:
+#
+#   taste     – product-preference profile inferred from the user's interaction
+#               history (categories, price range, brand loyalty, taste coherence)
+#   technical – reviewing-style profile inferred from the user's raw review texts
+#               (focused aspects, sentiment tendency, writing specificity)
+#
+# Usage:
+#   python train_tokenizer.py --dataset beauty --config rqvae_user_profiles --mode user
+
+# ---------------------------------------------------------------------------
+# Tokenizer architecture (same as item tokenizers)
+# ---------------------------------------------------------------------------
+tokenizer_type: 'rqvae'
+use_pretrained: false
+model_path: null
+distance_metric: 'l2'
+normalize_input: null
+normalize_residual: false
+use_ema: true
+ema_decay: 0.99
+ema_eps: 1.0e-5
+low_usage_threshold: 100
+pca_dim: 120
+pca_whiten: true
+init_kwargs:
+  init_method: 'minibatch_kmeans'
+  init_batch_size: 3072
+  max_iter: 1000
+
+# RQ-VAE architecture
+encoder_dims: [768, 256, 128, 64]
+decoder_dims: [64, 128, 256, 768]
+
+# Quantization
+n_codebooks: 3
+codebook_size: 256
+commitment_cost: 0.25
+
+# Training
+num_epochs: 3000
+batch_size: 2048
+learning_rate: 0.001
+
+report_interval: 50
+
+# ---------------------------------------------------------------------------
+# User embedding sub-config
+# ---------------------------------------------------------------------------
+emb_config:
+  # entity=user activates the user profile pipeline instead of the item
+  # text pipeline.  train_tokenizer.py also sets this from --mode user.
+  entity: user
+
+  # SentenceTransformer used to encode the concatenated profile texts.
+  embedding_model: Qwen/Qwen3-Embedding-0.6B
+  max_seq_length: 8192
+  batch_size: 4
+
+  # Profile components to generate and concatenate (order matters for the
+  # concatenated text that is fed to the embedding model).
+  profiles:
+    - taste      # product-preference profile from interaction history metadata
+    - technical  # reviewing-style profile from raw review texts
+
+  text_combine_method: concat_text
+
+  # vLLM model used to generate both profile texts.
+  llm_model: Qwen/Qwen2.5-32B-Instruct-AWQ
+
+  # Maximum number of interacted items per user included in the taste prompt.
+  max_items: 15
+
+  # Maximum number of reviews per user included in the technical prompt.
+  max_reviews: 15
+
+  # Maximum tokens per individual item entry (truncated if exceeded).
+  max_tokens_per_review: 200
+
+  # Maximum tokens generated per profile text.
+  max_output_tokens: 512
+
+  # Sampling temperature for profile generation.
+  temperature: 0.7
+
+  # Uncomment to enable LLM output caching (recommended for repeated ablation
+  # runs).  Cache files are stored one level above the embedding-model directory
+  # so they are shared across embedding-model ablation runs automatically.
+  # llm_cache_dir is set automatically by extract_user_embeddings(); you only
+  # need to override this if you want a custom cache location.
+  # llm_cache_dir: data/llm_cache/users

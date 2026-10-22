@@ -1,0 +1,26 @@
+data:
+  word_tok: default
+  batch_size: 200
+  train_workers: 2
+  semantic_id:
+    item:
+      config_name: rqfaiss_qwen_3cb
+      mode: replace
+      dedup_items_on_load: false
+    user:
+      config_name: rqfaiss_qwen_user_profiles_8cb
+      mode: replace
+      dedup_items_on_load: false
+model:
+  name: NRT
+  suffix: -SID_UI__rqfaiss_qwen_3cb__rqfaiss_qwen_user_profiles_8cb
+  emsize: 300
+  hidden_size: 400
+  nlayers_rr: 4
+  mtl_aggregator:
+    name: sum
+train:
+  clip_norm: 1.0
+  optim:
+    name: adam
+    lr: 0.0001

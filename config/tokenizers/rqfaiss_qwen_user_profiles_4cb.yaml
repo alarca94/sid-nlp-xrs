@@ -1,0 +1,54 @@
+# RQ-Faiss User SID Tokenizer Configuration (4 codebooks)
+#
+# Trains a Semantic ID tokenizer whose embedding space represents *users*
+# rather than items.  Uses FAISS residual quantization (faiss_rq) over
+# Qwen3 user-profile embeddings (taste + technical).
+#
+# Usage:
+#   python train_tokenizer.py --dataset beauty \
+#       --config rqfaiss_qwen_user_profiles_4cb --mode user
+
+# ── Tokenizer type ──────────────────────────────────────────────────────────
+tokenizer_type: 'faiss_rq'
+use_pretrained: false
+model_path: null
+
+# ── Quantization settings ───────────────────────────────────────────────────
+n_codebooks: 4
+codebook_size: 256
+input_dim: 1024
+
+# ── FAISS RQ specific ───────────────────────────────────────────────────────
+normalize_input: true
+normalize_residual: true
+train_layer_wise: true
+init_buffer_size: 3072
+pca_dim: 128
+pca_whiten: true
+faiss_omp_num_threads: 16
+
+# ── Inference / evaluation ──────────────────────────────────────────────────
+chunk_size: 10000
+
+# ---------------------------------------------------------------------------
+# User embedding sub-config
+# ---------------------------------------------------------------------------
+emb_config:
+  entity: user
+
+  embedding_model: Qwen/Qwen3-Embedding-0.6B
+  max_seq_length: 8192
+  batch_size: 4
+
+  profiles:
+    - taste
+    - technical
+
+  text_combine_method: concat_text
+
+  llm_model: Qwen/Qwen2.5-32B-Instruct-AWQ
+  max_items: 15
+  max_reviews: 15
+  max_tokens_per_review: 200
+  max_output_tokens: 512
+  temperature: 0.7

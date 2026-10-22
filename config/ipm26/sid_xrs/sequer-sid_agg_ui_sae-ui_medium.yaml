@@ -1,0 +1,56 @@
+data:
+  class_name: SEQUERDataset
+  train_workers: 4
+  eval_workers: 4
+  hist_len: 20
+  word_tok: "default"
+  batch_size: 128
+  seq_mode: HIST_ITEM
+  requires_nextitem: True
+  sae_cfg:
+    emb_model: "Qwen/Qwen3-Embedding-0.6B"
+    mode: "medium"
+  load_cols:
+    - review
+  semantic_id:
+    item:
+      config_name: "rqvae_qwen_3cb_sae-medium"
+      mode: "replace"
+      dedup_items_on_load: False
+    user:
+      config_name: "rqvae_user_profiles_sae-medium"
+      mode: "replace"
+      dedup_items_on_load: False
+
+model:
+  name: SEQUER
+  suffix: -SID_AGG_UI_SAE-UI_MEDIUM
+  emsize: 256
+  nhid: 2048
+  nhead: 2
+  nlayers: 2
+  dropout: 0.1
+  use_feature: False
+  mask_type: "causal"
+  # Codebook-initialisation from RQ-VAE centroids
+  init_codebooks: False
+  sid_agg: "mean"
+  # Set to True to keep the codebook embeddings frozen during training
+  freeze_codebooks: False
+  intra_item_attention: False
+  nextitem_loss: "CE"
+  mtl_aggregator:
+    name: "sum"
+    weights:
+      explanation: 1.0
+      context: 1.0
+      rating: 0.1
+      next_item: 0.1
+
+train:
+  clip_norm: 1.0
+  scheduler:
+    name: "steplr"
+  optim:
+    name: "adamw"
+    lr: 0.001

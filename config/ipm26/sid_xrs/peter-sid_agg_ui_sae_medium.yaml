@@ -1,0 +1,51 @@
+data:
+  train_workers: 4
+  eval_workers: 4
+  hist_len: 0
+  word_tok: "default"
+  coldstart_fill: False
+  batch_size: 128
+  sae_cfg:
+    emb_model: "Qwen/Qwen3-Embedding-0.6B"
+    mode: "medium"
+  load_cols:
+    - review
+  semantic_id:
+    item:
+      config_name: "rqvae_qwen_3cb"
+      mode: "replace"
+      dedup_items_on_load: False
+    user:
+      config_name: "rqvae_user_profiles"
+      mode: "replace"
+      dedup_items_on_load: False
+
+model:
+  name: PETER
+  suffix: -SID_AGG_UI_SAE_MEDIUM
+  emsize: 512
+  nhid: 2048
+  nhead: 2
+  nlayers: 2
+  dropout: 0.2
+  use_feature: False
+  mask_type: "peter"
+  tied_weights: False
+  init_codebooks: False     # Embedding weights initialisation from RQ-VAE centroids
+  # item_finetune_flag: True  # Set to False to freeze the embedding weights during training
+  sid_agg: "mean"
+  mtl_aggregator:
+    name: "sum"
+    weights:
+      explanation: 1.0
+      context: 1.0
+      rating: 0.1
+
+train:
+  clip_norm: 1.0
+  # benchmark_steps: 50
+  scheduler:
+    name: "steplr"
+  optim:
+    name: "adamw"
+    lr: 0.001

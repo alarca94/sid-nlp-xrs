@@ -1,0 +1,56 @@
+data:
+  batch_size: 80
+  emb_models:
+  - apply_to:
+    - text
+    batch_size: 128
+    name: paraphrase-MiniLM-L6-v2
+    type: huggingface
+  gen_sampling: alternate_multiple
+  hist_len: 20
+  item_text_aggregation: tf-idf-mean
+  load_cols:
+  - review
+  train_workers: 4
+  eval_workers: 4
+  word_tok: default
+  sae_cfg:
+    emb_model: Qwen/Qwen3-Embedding-0.6B
+    mode: medium
+  semantic_id:
+    item:
+      config_name: rqfaiss_qwen_3cb
+      mode: replace
+      dedup_items_on_load: false
+model:
+  name: SEQUERTextFusion
+  suffix: -SID_AGG_SAE_MEDIUM-nofusion-tfidfmean-altMultiple_EXT__rqfaiss_qwen_3cb
+  emsize: 256
+  nhid: 2048
+  nhead: 2
+  nlayers: 2
+  dropout: 0.1
+  use_feature: false
+  use_concept: true
+  fusion_type: nofusion
+  mask_type: causal
+  init_codebooks: false
+  sid_agg: mean
+  freeze_codebooks: false
+  intra_item_attention: false
+  use_text_for_nextitem: true
+  nextitem_loss: CE
+  mtl_aggregator:
+    name: sum
+    weights:
+      explanation: 1.0
+      context: 1.0
+      rating: 0.1
+      next_item: 0.1
+train:
+  clip_norm: 1.0
+  scheduler:
+    name: steplr
+  optim:
+    name: adamw
+    lr: 0.001

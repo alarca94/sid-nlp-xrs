@@ -1,0 +1,60 @@
+# OPQ Tokenizer Configuration
+#
+# Implements Optimized Product Quantization (Ge et al., CVPR 2013) using faiss.
+# OPQ learns an orthogonal rotation of the embedding space that minimises PQ
+# reconstruction error, then applies standard Product Quantization.
+#
+# Training requires:  pip install faiss-cpu  (or faiss-gpu for GPU support)
+# Inference runs in pure PyTorch — no faiss dependency after training.
+#
+# Usage:
+#   python train_tokenizer.py --dataset <dataset> \
+#       --config opq_qwen_3cb
+#
+# Key hyperparameters:
+#   - n_codebooks:   Number of PQ sub-quantizers (M). Controls token length.
+#   - codebook_size: Vocabulary per position — MUST be a power of 2
+#                    (e.g. 64 = 2^6, 128 = 2^7, 256 = 2^8).
+#                    Must satisfy: input_dim % n_codebooks == 0.
+#   - opq_niter:     Alternating-minimisation iterations for the rotation.
+#                    More iterations = better rotation, longer training.
+
+# ── Tokenizer type ──────────────────────────────────────────────────────────
+tokenizer_type: 'opq'
+use_pretrained: false
+model_path: null  # Set this if use_pretrained=true
+
+# ── Quantization settings ───────────────────────────────────────────────────
+n_codebooks: 3         # PQ sub-quantizers (M); token sequence length
+codebook_size: 256     # Codes per sub-quantizer — must be a power of 2
+
+# ── OPQ-specific ─────────────────────────────────────────────────────────────
+normalize_input: false       # L2-normalise embeddings before quantization
+opq_niter: 50               # OPQ alternating-minimisation iterations
+use_gpu: false              # Use GPU faiss resources during training
+gpu_id: 0                   # GPU device ID (only used when use_gpu=true)
+faiss_omp_num_threads: 16   # CPU OpenMP threads for faiss operations
+
+# ── PCA dimensionality reduction (optional) ───────────────────────────────────
+# Applied before the faiss index. Set pca_dim > 0 to reduce embedding dims.
+# Useful when input_dim % n_codebooks != 0, or to reduce storage/compute cost.
+# pca_whiten applies ZCA whitening (decorrelates + unit-variance), which
+# typically improves PQ quality significantly.
+pca_dim: 120          # 0 = disabled; It has to be divisible by n_codebooks
+pca_whiten: true      # Apply whitening in the PCA step
+
+# ── Inference / evaluation ───────────────────────────────────────────────────
+chunk_size: 10000   # Process embeddings in chunks to limit memory usage
+
+# ── Embedding source sub-config ──────────────────────────────────────────────
+emb_config:
+  source: 'text'
+  embedding_model: Qwen/Qwen3-Embedding-0.6B  # 2048-dim; n_codebooks must divide 2048
+
+  components:
+    - metadata
+    - description
+
+  text_combine_method: concat_text
+
+report_interval: 1

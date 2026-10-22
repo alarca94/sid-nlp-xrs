@@ -1,0 +1,23 @@
+tokenizer:
+  input_dim: null
+  latent_dim: 128  # 8× expansion
+  codebook_size: 2048
+  top_k: 32  # L0 ≈ 1.6 %
+  aux_top_k: 256  # ≈ 12.5 % of codebook
+  aux_lambda: 0.03125 # 1 / 32
+  dead_after_n: 2500
+  norm_input: False
+  tied: False
+  dim_reduction:
+    type: "pca"
+train:
+  epochs: 400
+  steps: 15000
+  batch_size: 2048
+  init_batch_size: 4096
+  log_every_n: 20
+  report_metrics_every_n: 50
+  optim:
+    lr: 1e-4
+    eps: 6.25e-10
+    betas: [0.9, 0.999]

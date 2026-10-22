@@ -1,0 +1,39 @@
+data:
+  batch_size: 80
+  emb_models:
+  - apply_to:
+    - text
+    batch_size: 128
+    name: paraphrase-MiniLM-L6-v2
+    type: huggingface
+  gen_sampling: alternate_multiple
+  hist_len: 20
+  item_text_aggregation: tf-idf-mean
+  load_cols: []
+  train_workers: 4
+  word_tok: default
+model:
+  dropout: 0.1
+  emsize: 256
+  fusion_type: nofusion
+  mtl_aggregator:
+    name: sum
+    weights:
+      context: 1.0
+      explanation: 1.0
+      next_item: 0.1
+      rating: 0.1
+  name: SEQUERTextFusion
+  nhead: 2
+  nhid: 2048
+  nlayers: 2
+  suffix: -nofusion-tfidfmean-useText-altMultiple
+  use_feature: false
+  use_text_for_nextitem: true
+train:
+  clip_norm: 1.0
+  optim:
+    lr: 0.001
+    name: adamw
+  scheduler:
+    name: steplr

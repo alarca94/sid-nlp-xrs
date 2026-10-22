@@ -1,0 +1,13 @@
+name: "Beauty"
+
+# Parameters for extract_exps.py
+stanza_tools: "tokenize"
+exp_rule: "naive_exp_rule"
+
+# Parameters for process_data.py
+min_revs: 4
+kcore: 5
+dedup_uir: False
+min_exp_toks: null
+max_u_samples: null
+time_unit: "s"
